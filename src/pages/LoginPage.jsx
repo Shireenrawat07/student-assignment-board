@@ -118,13 +118,16 @@ function LoginPage() {
           </summary>
           <div className="space-y-3 border-t border-sky-100 px-4 py-4">
             <p className="m-0 text-xs text-slate-600">
-              Use the demonstration password <code className="rounded bg-cyan-50 px-1.5 py-0.5 font-mono text-cyan-900">demo123</code> for any account.
+              Each demo account has its own password.
             </p>
             <ul className="m-0 max-h-48 list-none space-y-2 overflow-y-auto p-0">
               {demoUsers.map((user) => (
-                <li className="flex flex-col gap-1 text-sm sm:flex-row sm:items-center sm:justify-between" key={user.id}>
-                  <span className="font-medium text-slate-800">{user.name}</span>
-                  <span className="break-all text-xs text-slate-600">{user.email} · {user.role}</span>
+                <li className="flex flex-col gap-1 rounded-lg bg-white/60 p-2.5 text-sm" key={user.id}>
+                  <span className="font-medium text-slate-800">{user.name} · {user.role}</span>
+                  <span className="break-all text-xs text-slate-600">{user.email}</span>
+                  <span className="text-xs text-slate-600">
+                    Password: <code className="rounded bg-cyan-50 px-1.5 py-0.5 font-mono text-cyan-900">{user.password}</code>
+                  </span>
                 </li>
               ))}
             </ul>

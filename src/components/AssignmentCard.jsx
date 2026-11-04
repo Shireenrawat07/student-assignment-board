@@ -64,9 +64,9 @@ function AssignmentCard({
           className="mt-4 inline-flex min-h-10 items-center gap-2 self-start rounded-lg px-2 text-sm font-medium text-cyan-800 transition-colors hover:bg-cyan-50 hover:text-cyan-950 focus-visible:outline-offset-2"
           href={externalLink}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
-          <span>Open Google Drive</span>
+          <span>View Assignment</span>
           <ExternalLink aria-hidden="true" size={15} />
         </a>
       )}

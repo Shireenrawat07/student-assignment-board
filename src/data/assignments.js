@@ -1,10 +1,10 @@
 export const seedAssignments = [
   {
     id: 'assignment-data-structures',
-    title: 'Data Structures Case Study',
+    title: 'React Fundamentals',
     description: 'Analyze a practical use case and compare the efficiency of appropriate data structures.',
     dueDate: '2026-11-15',
-    driveLink: 'https://drive.google.com/drive/u/0/search?q=Data%20Structures%20Case%20Study',
+    driveLink: 'https://docs.google.com/document/d/1knTDEMdZZTZ55tiQZEcj1uXEB0tA7JRiK2QaClUPvPk/edit?usp=sharing',
     creatorId: 'admin-sharma',
     assignedStudentIds: ['student-aarav', 'student-priya', 'student-rahul'],
     submissions: {
@@ -15,10 +15,10 @@ export const seedAssignments = [
   },
   {
     id: 'assignment-database-design',
-    title: 'Database Design and Normalization',
+    title: 'JavaScript ES6 Concepts',
     description: 'Design a relational schema for a campus service and explain its normalization choices.',
     dueDate: '2026-10-30',
-    driveLink: 'https://drive.google.com/drive/u/0/search?q=Database%20Design%20and%20Normalization',
+    driveLink: 'https://docs.google.com/document/d/16mFGs77A7qZdN0hRU2aWgqGptOk4_-MLtSB1GSTppC4/edit?usp=sharing',
     creatorId: 'admin-mehta',
     assignedStudentIds: ['student-priya', 'student-ananya', 'student-ishita'],
     submissions: {
@@ -29,10 +29,10 @@ export const seedAssignments = [
   },
   {
     id: 'assignment-os-scheduling',
-    title: 'Operating Systems Scheduling Report',
+    title: 'Database Management',
     description: 'Compare scheduling algorithms and document their impact with a worked example.',
     dueDate: '2026-11-12',
-    driveLink: 'https://drive.google.com/drive/u/0/search?q=Operating%20Systems%20Scheduling%20Report',
+    driveLink: 'https://docs.google.com/document/d/1Iv8lmS5DCqDdsm0QXUt_jkRU_DKClBSgfG9A08lT5v0/edit?usp=drive_link',
     creatorId: 'admin-sharma',
     assignedStudentIds: ['student-aarav', 'student-ananya'],
     submissions: {
@@ -42,10 +42,10 @@ export const seedAssignments = [
   },
   {
     id: 'assignment-network-security',
-    title: 'Computer Networks Protocol Review',
+    title: 'Data Structures and Algorithms',
     description: 'Prepare a concise review of a network protocol, its use cases, and common trade-offs.',
     dueDate: '2026-10-28',
-    driveLink: 'https://drive.google.com/drive/u/0/search?q=Computer%20Networks%20Protocol%20Review',
+    driveLink: 'https://docs.google.com/document/d/18TkIuTN1yw_hHFFiG-nFR8CtlXCjjd6S6I7B7jX_XCw/edit?usp=drive_link',
     creatorId: 'admin-mehta',
     assignedStudentIds: ['student-rahul', 'student-ishita'],
     submissions: {
@@ -55,10 +55,10 @@ export const seedAssignments = [
   },
   {
     id: 'assignment-software-engineering',
-    title: 'Software Engineering Project Proposal',
+    title: 'Web Development Project',
     description: 'Outline a project idea, its intended users, scope, milestones, and evaluation approach.',
     dueDate: '2026-11-20',
-    driveLink: 'https://drive.google.com/drive/u/0/search?q=Software%20Engineering%20Project%20Proposal',
+    driveLink: 'https://docs.google.com/document/d/1o2u6XnAIHGcDHuiX_O5II1joPY8Gg_iD0bKATsxukBo/edit?usp=drive_link',
     creatorId: 'admin-sharma',
     assignedStudentIds: [
       'student-aarav',

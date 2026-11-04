@@ -170,11 +170,14 @@ function AdminDashboard() {
     }
     try {
       const url = new URL(form.driveLink.trim())
-      if (url.protocol !== 'https:' || url.hostname !== 'drive.google.com') {
-        return 'Enter a valid HTTPS Google Drive URL.'
+      if (
+        url.protocol !== 'https:' ||
+        !['drive.google.com', 'docs.google.com'].includes(url.hostname)
+      ) {
+        return 'Enter a valid HTTPS Google Drive or Google Docs URL.'
       }
     } catch {
-      return 'Enter a valid HTTPS Google Drive URL.'
+      return 'Enter a valid HTTPS Google Drive or Google Docs URL.'
     }
     return ''
   }

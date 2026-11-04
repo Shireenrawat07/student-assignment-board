@@ -36,13 +36,47 @@ function getStoredAssignments() {
       throw new TypeError('Stored assignment data has an invalid format.')
     }
 
+    const seedAssignmentsById = new Map(seedAssignments.map((assignment) => [assignment.id, assignment]))
+    let didMigrate = false
+    const migratedStoredAssignments = parsed.assignments.map((assignment) => {
+      if (!isValidAssignment(assignment)) return assignment
+
+      const seedAssignment = seedAssignmentsById.get(assignment.id)
+      if (
+        !seedAssignment ||
+        (assignment.title === seedAssignment.title &&
+          assignment.driveLink === seedAssignment.driveLink)
+      ) {
+        return assignment
+      }
+
+      didMigrate = true
+      return {
+        ...assignment,
+        title: seedAssignment.title,
+        driveLink: seedAssignment.driveLink,
+      }
+    })
+
     const assignmentsById = new Map(seedAssignments.map((assignment) => [assignment.id, assignment]))
-    parsed.assignments.forEach((assignment) => {
+    migratedStoredAssignments.forEach((assignment) => {
       if (isValidAssignment(assignment)) assignmentsById.set(assignment.id, assignment)
     })
 
     const deletedIds = parsed.deletedIds.filter((id) => typeof id === 'string')
     deletedIds.forEach((id) => assignmentsById.delete(id))
+
+    if (didMigrate) {
+      try {
+        window.localStorage.setItem(
+          ASSIGNMENTS_STORAGE_KEY,
+          JSON.stringify({ ...parsed, assignments: migratedStoredAssignments }),
+        )
+      } catch (error) {
+        console.error('Unable to migrate seeded assignment titles and links in local storage.', error)
+      }
+    }
+
     return { assignments: [...assignmentsById.values()], deletedIds }
   } catch (error) {
     console.error('Unable to restore assignments from local storage.', error)

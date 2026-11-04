@@ -35,7 +35,9 @@ function LoginPage() {
           <span className="mx-auto mb-4 grid size-14 place-items-center rounded-2xl bg-cyan-100 text-cyan-800">
             <LockKeyhole aria-hidden="true" size={25} />
           </span>
-          <p className="text-xs font-semibold tracking-[0.2em] text-cyan-800 uppercase">Joineazy</p>
+          <p className="text-xs font-semibold tracking-[0.2em] text-cyan-800 uppercase">
+            Student Assignment &amp; Review Dashboard
+          </p>
           <h1 className="mt-2 text-2xl font-semibold text-slate-900">Welcome back</h1>
           <p className="mt-2 text-sm text-slate-600">Sign in to your assignment workspace.</p>
         </div>

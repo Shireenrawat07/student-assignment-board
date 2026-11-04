@@ -1,4 +1,6 @@
 import { BookOpenCheck, LayoutDashboard, LogOut } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { getDashboardPath } from '../data/demoUsers.js'
 
 function getInitials(name) {
   return name
@@ -14,14 +16,17 @@ function Navbar({
   brandName = 'Student Assignment & Review Dashboard',
   userName,
   userRole,
+  role,
   avatarUrl,
   onLogout,
 }) {
+  const dashboardPath = getDashboardPath(role)
+
   return (
     <header className="glass-surface mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 rounded-2xl px-4 py-3 sm:px-6">
-      <a
+      <Link
         className="flex min-w-0 items-center gap-3 rounded-xl text-inherit no-underline"
-        href="#dashboard"
+        to={dashboardPath}
         aria-label={`${brandName} home`}
       >
         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-cyan-100 text-cyan-800">
@@ -30,17 +35,16 @@ function Navbar({
         <span className="max-w-56 text-sm leading-tight font-semibold text-slate-900 sm:max-w-none sm:text-base">
           {brandName}
         </span>
-      </a>
+      </Link>
 
       <nav className="order-3 flex w-full items-center border-t border-sky-100/80 pt-2 sm:order-none sm:w-auto sm:border-0 sm:pt-0" aria-label="Main navigation">
-        <a
+        <Link
           className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-cyan-50 px-3 text-sm font-medium text-cyan-800 transition-colors hover:bg-cyan-100 focus-visible:outline-offset-2"
-          href="#dashboard"
-          aria-current="page"
+          to={dashboardPath}
         >
           <LayoutDashboard aria-hidden="true" size={17} />
-          <span>Dashboard</span>
-        </a>
+          <span>{role === 'admin' ? 'Admin area' : 'Student area'}</span>
+        </Link>
       </nav>
 
       <div className="ml-auto flex items-center gap-3 sm:ml-0 sm:gap-4">

@@ -1,0 +1,85 @@
+import { BookOpenCheck, LayoutDashboard, LogOut } from 'lucide-react'
+
+function getInitials(name) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
+}
+
+function Navbar({
+  brandName = 'Student Assignment & Review Dashboard',
+  userName,
+  userRole,
+  avatarUrl,
+  onLogout,
+}) {
+  return (
+    <header className="glass-surface mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 rounded-2xl px-4 py-3 sm:px-6">
+      <a
+        className="flex min-w-0 items-center gap-3 rounded-xl text-inherit no-underline"
+        href="#dashboard"
+        aria-label={`${brandName} home`}
+      >
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-cyan-100 text-cyan-800">
+          <BookOpenCheck aria-hidden="true" size={21} />
+        </span>
+        <span className="max-w-56 text-sm leading-tight font-semibold text-slate-900 sm:max-w-none sm:text-base">
+          {brandName}
+        </span>
+      </a>
+
+      <nav className="order-3 flex w-full items-center border-t border-sky-100/80 pt-2 sm:order-none sm:w-auto sm:border-0 sm:pt-0" aria-label="Main navigation">
+        <a
+          className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-cyan-50 px-3 text-sm font-medium text-cyan-800 transition-colors hover:bg-cyan-100 focus-visible:outline-offset-2"
+          href="#dashboard"
+          aria-current="page"
+        >
+          <LayoutDashboard aria-hidden="true" size={17} />
+          <span>Dashboard</span>
+        </a>
+      </nav>
+
+      <div className="ml-auto flex items-center gap-3 sm:ml-0 sm:gap-4">
+        <div className="flex min-w-0 items-center gap-2.5">
+          {avatarUrl ? (
+            <img
+              className="size-10 rounded-full border border-white object-cover shadow-sm"
+              src={avatarUrl}
+              alt=""
+            />
+          ) : (
+            <span
+              className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-cyan-100 to-teal-100 text-xs font-semibold text-cyan-900"
+              aria-hidden="true"
+            >
+              {userName ? getInitials(userName) : '?'}
+            </span>
+          )}
+          <span className="block min-w-0">
+            <span className="block max-w-24 truncate text-xs font-semibold text-slate-800 sm:max-w-40 sm:text-sm">
+              {userName || 'Account'}
+            </span>
+            <span className="block text-[10px] text-slate-500 sm:text-xs">{userRole || 'Role not set'}</span>
+          </span>
+        </div>
+        <button
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-sky-100 bg-white/70 px-3 text-sm font-medium text-slate-600 transition-colors hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-900 disabled:cursor-not-allowed disabled:opacity-55"
+          type="button"
+          onClick={onLogout}
+          disabled={!onLogout}
+          title={onLogout ? undefined : 'Available when authentication is implemented'}
+        >
+          <LogOut aria-hidden="true" size={17} />
+          <span className="hidden sm:inline">Log out</span>
+          <span className="sr-only sm:hidden">Log out</span>
+        </button>
+      </div>
+    </header>
+  )
+}
+
+export default Navbar

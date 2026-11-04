@@ -1,7 +1,7 @@
 function App() {
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-16">
-      <section className="w-full max-w-3xl rounded-[2rem] border border-white/80 bg-white/65 px-8 py-16 text-center shadow-[0_24px_80px_-32px_rgba(29,78,110,0.28)] backdrop-blur-xl sm:px-16">
+      <section className="glass-surface animate-enter w-full max-w-3xl px-8 py-16 text-center sm:px-16">
         <p className="mb-5 text-xs font-semibold tracking-[0.24em] text-cyan-700 uppercase">
           Student workspace
         </p>

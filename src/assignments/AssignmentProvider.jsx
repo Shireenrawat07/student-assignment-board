@@ -8,6 +8,18 @@ import {
   SUBMISSION_STORAGE_KEY,
 } from './assignmentContext.js'
 
+const LEGACY_SEEDED_ASSIGNMENT_IDS = {
+  'assignment-data-structures': 'react-fundamentals',
+  'assignment-database-design': 'javascript-es6-concepts',
+  'assignment-os-scheduling': 'database-management',
+  'assignment-network-security': 'data-structures-algorithms',
+  'assignment-software-engineering': 'web-development-project',
+}
+
+function getCanonicalAssignmentId(assignmentId) {
+  return LEGACY_SEEDED_ASSIGNMENT_IDS[assignmentId] ?? assignmentId
+}
+
 function isValidAssignment(assignment) {
   return Boolean(
     assignment &&
@@ -26,6 +38,26 @@ function isValidAssignment(assignment) {
   )
 }
 
+function mergeDuplicateAssignments(existing, incoming) {
+  const assignedStudentIds = [...new Set([
+    ...existing.assignedStudentIds,
+    ...incoming.assignedStudentIds,
+  ])]
+  const submissions = { ...existing.submissions }
+  Object.entries(incoming.submissions).forEach(([studentId, status]) => {
+    if (status === 'submitted' || submissions[studentId] === undefined) {
+      submissions[studentId] = status
+    }
+  })
+
+  return {
+    ...existing,
+    ...incoming,
+    assignedStudentIds,
+    submissions,
+  }
+}
+
 function getStoredAssignments() {
   try {
     const stored = window.localStorage.getItem(ASSIGNMENTS_STORAGE_KEY)
@@ -38,42 +70,69 @@ function getStoredAssignments() {
 
     const seedAssignmentsById = new Map(seedAssignments.map((assignment) => [assignment.id, assignment]))
     let didMigrate = false
-    const migratedStoredAssignments = parsed.assignments.map((assignment) => {
-      if (!isValidAssignment(assignment)) return assignment
-
-      const seedAssignment = seedAssignmentsById.get(assignment.id)
-      if (
-        !seedAssignment ||
-        (assignment.title === seedAssignment.title &&
-          assignment.driveLink === seedAssignment.driveLink)
-      ) {
-        return assignment
-      }
-
-      didMigrate = true
-      return {
-        ...assignment,
-        title: seedAssignment.title,
-        driveLink: seedAssignment.driveLink,
-      }
-    })
-
     const assignmentsById = new Map(seedAssignments.map((assignment) => [assignment.id, assignment]))
-    migratedStoredAssignments.forEach((assignment) => {
-      if (isValidAssignment(assignment)) assignmentsById.set(assignment.id, assignment)
+    const storedAssignmentsById = new Map()
+    const invalidStoredAssignments = []
+    parsed.assignments.forEach((assignment) => {
+      if (!isValidAssignment(assignment)) {
+        invalidStoredAssignments.push(assignment)
+        return
+      }
+
+      const originalId = assignment.id
+      const canonicalId = getCanonicalAssignmentId(originalId)
+      const seedAssignment = seedAssignmentsById.get(canonicalId)
+      const normalizedAssignment = seedAssignment
+        ? {
+            ...assignment,
+            id: canonicalId,
+            title: seedAssignment.title,
+            description: seedAssignment.description,
+            driveLink: seedAssignment.driveLink,
+          }
+        : assignment
+      const previousStoredAssignment = storedAssignmentsById.get(canonicalId)
+
+      if (
+        originalId !== canonicalId ||
+        (seedAssignment &&
+          (assignment.title !== seedAssignment.title ||
+            assignment.description !== seedAssignment.description ||
+            assignment.driveLink !== seedAssignment.driveLink)) ||
+        previousStoredAssignment
+      ) {
+        didMigrate = true
+      }
+
+      const mergedAssignment = previousStoredAssignment
+        ? mergeDuplicateAssignments(previousStoredAssignment, normalizedAssignment)
+        : normalizedAssignment
+      storedAssignmentsById.set(canonicalId, mergedAssignment)
+      assignmentsById.set(canonicalId, mergedAssignment)
     })
 
-    const deletedIds = parsed.deletedIds.filter((id) => typeof id === 'string')
+    const deletedIds = [...new Set(
+      parsed.deletedIds
+        .filter((id) => typeof id === 'string')
+        .map(getCanonicalAssignmentId),
+    )]
+    parsed.deletedIds.forEach((id) => {
+      if (getCanonicalAssignmentId(id) !== id) didMigrate = true
+    })
     deletedIds.forEach((id) => assignmentsById.delete(id))
 
     if (didMigrate) {
       try {
         window.localStorage.setItem(
           ASSIGNMENTS_STORAGE_KEY,
-          JSON.stringify({ ...parsed, assignments: migratedStoredAssignments }),
+          JSON.stringify({
+            ...parsed,
+            assignments: [...storedAssignmentsById.values(), ...invalidStoredAssignments],
+            deletedIds,
+          }),
         )
       } catch (error) {
-        console.error('Unable to migrate seeded assignment titles and links in local storage.', error)
+        console.error('Unable to migrate seeded assignments in local storage.', error)
       }
     }
 
@@ -94,19 +153,34 @@ function getStoredUpdates(assignments) {
       throw new TypeError('Stored submission data must be an object.')
     }
 
-    return Object.fromEntries(
-      Object.entries(parsed).flatMap(([assignmentId, studentStatuses]) => {
-        const assignment = assignments.find((item) => item.id === assignmentId)
-        if (!assignment || !studentStatuses || typeof studentStatuses !== 'object') return []
-        const validStatuses = Object.fromEntries(
-          Object.entries(studentStatuses).filter(
-            ([studentId, status]) =>
-              assignment.assignedStudentIds.includes(studentId) && status === 'submitted',
-          ),
-        )
-        return Object.keys(validStatuses).length ? [[assignmentId, validStatuses]] : []
-      }),
-    )
+    let didMigrate = false
+    const migratedUpdates = {}
+    Object.entries(parsed).forEach(([storedAssignmentId, studentStatuses]) => {
+      const assignmentId = getCanonicalAssignmentId(storedAssignmentId)
+      if (assignmentId !== storedAssignmentId) didMigrate = true
+      const assignment = assignments.find((item) => item.id === assignmentId)
+      if (!assignment || !studentStatuses || typeof studentStatuses !== 'object') return
+      const validStatuses = Object.fromEntries(
+        Object.entries(studentStatuses).filter(
+          ([studentId, status]) =>
+            assignment.assignedStudentIds.includes(studentId) && status === 'submitted',
+        ),
+      )
+      if (!Object.keys(validStatuses).length) return
+
+      const existingStatuses = migratedUpdates[assignmentId] ?? {}
+      migratedUpdates[assignmentId] = { ...existingStatuses, ...validStatuses }
+    })
+
+    if (didMigrate) {
+      try {
+        window.localStorage.setItem(SUBMISSION_STORAGE_KEY, JSON.stringify(migratedUpdates))
+      } catch (error) {
+        console.error('Unable to migrate seeded assignment submissions in local storage.', error)
+      }
+    }
+
+    return migratedUpdates
   } catch (error) {
     console.error('Unable to restore assignment submissions from local storage.', error)
     return {}

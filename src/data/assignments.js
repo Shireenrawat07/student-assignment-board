@@ -1,8 +1,8 @@
 export const seedAssignments = [
   {
-    id: 'assignment-data-structures',
+    id: 'react-fundamentals',
     title: 'React Fundamentals',
-    description: 'Analyze a practical use case and compare the efficiency of appropriate data structures.',
+    description: 'Learn the fundamentals of React, including components, JSX, props, state, event handling, hooks, and building reusable user interfaces.',
     dueDate: '2026-11-15',
     driveLink: 'https://docs.google.com/document/d/1knTDEMdZZTZ55tiQZEcj1uXEB0tA7JRiK2QaClUPvPk/edit?usp=sharing',
     creatorId: 'admin-sharma',
@@ -14,9 +14,9 @@ export const seedAssignments = [
     },
   },
   {
-    id: 'assignment-database-design',
+    id: 'javascript-es6-concepts',
     title: 'JavaScript ES6 Concepts',
-    description: 'Design a relational schema for a campus service and explain its normalization choices.',
+    description: 'Explore modern JavaScript ES6 features, including let and const, arrow functions, template literals, destructuring, spread and rest operators, promises, and modules.',
     dueDate: '2026-10-30',
     driveLink: 'https://docs.google.com/document/d/16mFGs77A7qZdN0hRU2aWgqGptOk4_-MLtSB1GSTppC4/edit?usp=sharing',
     creatorId: 'admin-mehta',
@@ -28,9 +28,9 @@ export const seedAssignments = [
     },
   },
   {
-    id: 'assignment-os-scheduling',
+    id: 'database-management',
     title: 'Database Management',
-    description: 'Compare scheduling algorithms and document their impact with a worked example.',
+    description: 'Study database management concepts, including database models, SQL queries, relational databases, normalization, keys, and transaction management.',
     dueDate: '2026-11-12',
     driveLink: 'https://docs.google.com/document/d/1Iv8lmS5DCqDdsm0QXUt_jkRU_DKClBSgfG9A08lT5v0/edit?usp=drive_link',
     creatorId: 'admin-sharma',
@@ -41,9 +41,9 @@ export const seedAssignments = [
     },
   },
   {
-    id: 'assignment-network-security',
+    id: 'data-structures-algorithms',
     title: 'Data Structures and Algorithms',
-    description: 'Prepare a concise review of a network protocol, its use cases, and common trade-offs.',
+    description: 'Practice fundamental data structures and algorithms, including arrays, linked lists, stacks, queues, trees, searching, sorting, and complexity analysis.',
     dueDate: '2026-10-28',
     driveLink: 'https://docs.google.com/document/d/18TkIuTN1yw_hHFFiG-nFR8CtlXCjjd6S6I7B7jX_XCw/edit?usp=drive_link',
     creatorId: 'admin-mehta',
@@ -54,9 +54,9 @@ export const seedAssignments = [
     },
   },
   {
-    id: 'assignment-software-engineering',
+    id: 'web-development-project',
     title: 'Web Development Project',
-    description: 'Outline a project idea, its intended users, scope, milestones, and evaluation approach.',
+    description: 'Design and develop a responsive web project using HTML, CSS, JavaScript, and React. Demonstrate component-based development, functionality, and responsive design.',
     dueDate: '2026-11-20',
     driveLink: 'https://docs.google.com/document/d/1o2u6XnAIHGcDHuiX_O5II1joPY8Gg_iD0bKATsxukBo/edit?usp=drive_link',
     creatorId: 'admin-sharma',

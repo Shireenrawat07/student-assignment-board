@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { AuthProvider } from './auth/AuthContext.jsx'
-import { HomeRedirect, LoginRedirect, RequireAuth } from './auth/RouteGuards.jsx'
-import { AssignmentProvider } from './assignments/AssignmentProvider.jsx'
-import LoginPage from './pages/LoginPage.jsx'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { useApp } from './context/AppContext.jsx'
+import { getDashboardPath } from './data/seedData.js'
+import { canAccessRole } from './utils/assignmentRules.js'
+import Login from './pages/Login.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 import StudentDashboard from './pages/StudentDashboard.jsx'
 
@@ -22,6 +22,7 @@ function getInitialTheme() {
 
 function App() {
   const [theme, setTheme] = useState(getInitialTheme)
+  const { currentUser } = useApp()
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -37,24 +38,27 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AssignmentProvider>
-          <Routes>
-            <Route element={<LoginRedirect />}>
-              <Route path="/" element={<LoginPage theme={theme} onToggleTheme={toggleTheme} />} />
-            </Route>
-            <Route element={<RequireAuth allowedRole="admin" />}>
-              <Route path="/admin/dashboard" element={<AdminDashboard theme={theme} onToggleTheme={toggleTheme} />} />
-            </Route>
-            <Route element={<RequireAuth allowedRole="student" />}>
-              <Route path="/student/dashboard" element={<StudentDashboard theme={theme} onToggleTheme={toggleTheme} />} />
-            </Route>
-            <Route path="*" element={<HomeRedirect />} />
-          </Routes>
-        </AssignmentProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <Routes>
+      <Route
+        path="/"
+        element={currentUser
+          ? <Navigate to={getDashboardPath(currentUser.role)} replace />
+          : <Login theme={theme} onToggleTheme={toggleTheme} />}
+      />
+      <Route
+        path="/admin/dashboard"
+        element={canAccessRole(currentUser, 'admin')
+          ? <AdminDashboard theme={theme} onToggleTheme={toggleTheme} />
+          : <Navigate to={currentUser ? getDashboardPath(currentUser.role) : '/'} replace />}
+      />
+      <Route
+        path="/student/dashboard"
+        element={canAccessRole(currentUser, 'student')
+          ? <StudentDashboard theme={theme} onToggleTheme={toggleTheme} />
+          : <Navigate to={currentUser ? getDashboardPath(currentUser.role) : '/'} replace />}
+      />
+      <Route path="*" element={<Navigate to={currentUser ? getDashboardPath(currentUser.role) : '/'} replace />} />
+    </Routes>
   )
 }
 

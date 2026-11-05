@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { authenticateDemoUser, canAccessRole } from '../src/auth/authService.js'
-import { demoUsers } from '../src/data/demoUsers.js'
+import { authenticateDemoUser, canAccessRole } from '../src/utils/assignmentRules.js'
+import { demoUsers } from '../src/data/seedData.js'
 
 test('demo account list contains two admins and five students', () => {
   assert.equal(demoUsers.filter((user) => user.role === 'admin').length, 2)

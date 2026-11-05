@@ -1,17 +1,8 @@
-import { useCallback, useMemo, useState } from 'react'
-import { seedAssignments } from '../data/assignments.js'
-import { demoUsers } from '../data/demoUsers.js'
-import { useAuth } from '../auth/useAuth.js'
-import {
-  AssignmentContext,
-  ASSIGNMENTS_STORAGE_KEY,
-  SUBMISSION_STORAGE_KEY,
-} from './assignmentContext.js'
-import {
-  canManageAssignment,
-  createAssignmentRecord,
-  createSubmissionUpdate,
-} from './assignmentRules.js'
+import { seedAssignments, demoUsers } from '../data/seedData.js'
+
+export const SESSION_KEY = 'student-assignment-board-demo-user'
+export const ASSIGNMENTS_STORAGE_KEY = 'student-assignment-board-assignments-v1'
+export const SUBMISSION_STORAGE_KEY = 'student-assignment-board-submissions-v1'
 
 const LEGACY_SEEDED_ASSIGNMENT_IDS = {
   'assignment-data-structures': 'react-fundamentals',
@@ -60,6 +51,37 @@ function mergeDuplicateAssignments(existing, incoming) {
     ...incoming,
     assignedStudentIds,
     submissions,
+  }
+}
+
+export function getStoredUser() {
+  try {
+    const email = window.localStorage.getItem(SESSION_KEY)
+    return demoUsers.find((user) => user.email === email) || null
+  } catch (error) {
+    console.error('Unable to restore the demo session from local storage.', error)
+    return null
+  }
+}
+
+export function saveSession(user) {
+  try {
+    window.localStorage.setItem(SESSION_KEY, user.email)
+    return { success: true }
+  } catch (error) {
+    console.error('Unable to save the demo session to local storage.', error)
+    return {
+      success: false,
+      error: 'Your session could not be saved in this browser. Check your storage settings and try again.',
+    }
+  }
+}
+
+export function clearSession() {
+  try {
+    window.localStorage.removeItem(SESSION_KEY)
+  } catch (error) {
+    console.error('Unable to clear the demo session from local storage.', error)
   }
 }
 
@@ -199,7 +221,7 @@ function getStoredUpdates(assignments) {
   }
 }
 
-function getInitialState() {
+export function getInitialAssignmentState() {
   const { assignments, deletedIds, error: assignmentError } = getStoredAssignments()
   const { updates, error: submissionError } = getStoredUpdates(assignments)
   return {
@@ -210,7 +232,20 @@ function getInitialState() {
   }
 }
 
-function persistAssignmentChanges(nextState, shouldSaveUpdates = false) {
+export function saveSubmissionUpdates(updates) {
+  try {
+    window.localStorage.setItem(SUBMISSION_STORAGE_KEY, JSON.stringify(updates))
+    return { success: true }
+  } catch (error) {
+    console.error('Unable to save the assignment submission to local storage.', error)
+    return {
+      success: false,
+      error: 'Your submission could not be saved. Check your browser storage and try again.',
+    }
+  }
+}
+
+export function persistAssignmentChanges(nextState, shouldSaveUpdates = false) {
   let oldAssignments
   let oldUpdates
   try {
@@ -249,118 +284,4 @@ function persistAssignmentChanges(nextState, shouldSaveUpdates = false) {
     }
     return { success: false, error: 'Changes could not be saved. Check your browser storage and try again.' }
   }
-}
-
-export function AssignmentProvider({ children }) {
-  const { currentUser } = useAuth()
-  const [state, setState] = useState(getInitialState)
-
-  const markSubmitted = useCallback((assignmentId, studentId) => {
-    const assignment = state.assignments.find((item) => item.id === assignmentId)
-    const submission = createSubmissionUpdate(assignment, state.updates, studentId, currentUser)
-    if (!submission.success) return submission
-
-    const nextState = {
-      ...state,
-      updates: submission.updates,
-    }
-
-    try {
-      window.localStorage.setItem(SUBMISSION_STORAGE_KEY, JSON.stringify(nextState.updates))
-    } catch (error) {
-      console.error('Unable to save the assignment submission to local storage.', error)
-      return { success: false, error: 'Your submission could not be saved. Check your browser storage and try again.' }
-    }
-
-    setState(nextState)
-    return { success: true }
-  }, [currentUser, state])
-
-  const createAssignment = useCallback((details) => {
-    const creation = createAssignmentRecord(details, currentUser)
-    if (!creation.success) return creation
-
-    const { assignment } = creation
-    const nextState = {
-      ...state,
-      assignments: [...state.assignments, assignment],
-      deletedIds: state.deletedIds.filter((id) => id !== assignment.id),
-    }
-    const result = persistAssignmentChanges(nextState)
-    if (result.success) setState(nextState)
-    return result
-  }, [currentUser, state])
-
-  const updateAssignment = useCallback((assignmentId, details) => {
-    if (currentUser?.role !== 'admin') {
-      return { success: false, error: 'Only admins can edit assignments.' }
-    }
-    const existing = state.assignments.find((assignment) => assignment.id === assignmentId)
-    if (!canManageAssignment(existing, currentUser)) {
-      return { success: false, error: 'You can only edit assignments you created.' }
-    }
-
-    const studentIds = [...new Set(details.assignedStudentIds)]
-    if (!studentIds.length) return { success: false, error: 'Select at least one student.' }
-    if (studentIds.some((id) => !demoUsers.some((user) => user.id === id && user.role === 'student'))) {
-      return { success: false, error: 'The student selection is invalid.' }
-    }
-
-    const submissions = Object.fromEntries(
-      studentIds.map((studentId) => [
-        studentId,
-        existing.assignedStudentIds.includes(studentId)
-          ? state.updates[assignmentId]?.[studentId] ?? existing.submissions[studentId] ?? 'pending'
-          : 'pending',
-      ]),
-    )
-    const updated = { ...existing, ...details, assignedStudentIds: studentIds, submissions }
-    const nextState = {
-      ...state,
-      assignments: state.assignments.map((assignment) =>
-        assignment.id === assignmentId ? updated : assignment,
-      ),
-      updates: { ...state.updates },
-    }
-    delete nextState.updates[assignmentId]
-    const result = persistAssignmentChanges(nextState, true)
-    if (result.success) setState(nextState)
-    return result
-  }, [currentUser, state])
-
-  const deleteAssignment = useCallback((assignmentId) => {
-    if (currentUser?.role !== 'admin') {
-      return { success: false, error: 'Only admins can delete assignments.' }
-    }
-    const existing = state.assignments.find((assignment) => assignment.id === assignmentId)
-    if (!canManageAssignment(existing, currentUser)) {
-      return { success: false, error: 'You can only delete assignments you created.' }
-    }
-
-    const nextState = {
-      ...state,
-      assignments: state.assignments.filter((assignment) => assignment.id !== assignmentId),
-      deletedIds: [...new Set([...state.deletedIds, assignmentId])],
-      updates: { ...state.updates },
-    }
-    delete nextState.updates[assignmentId]
-    const result = persistAssignmentChanges(nextState, true)
-    if (result.success) setState(nextState)
-    return result
-  }, [currentUser, state])
-
-  const value = useMemo(
-    () => ({
-      assignments: state.assignments,
-      updates: state.updates,
-      storageError: state.storageError,
-      markSubmitted,
-      createAssignment,
-      updateAssignment,
-      deleteAssignment,
-    }),
-    [state, markSubmitted, createAssignment, updateAssignment, deleteAssignment],
-  )
-
-  return <AssignmentContext.Provider value={value}>{children}</AssignmentContext.Provider>
 }

@@ -192,6 +192,75 @@ body {
   color: #91a8ba;
 }
 
+[data-theme="dark"] .login-notice {
+  border: 1px solid rgb(41 173 190 / 30%);
+  background: rgb(8 105 125 / 20%);
+  color: #d7e5ee;
+}
+
+[data-theme="dark"] .login-notice-title {
+  color: #9ce8f1;
+}
+
+[data-theme="dark"] .login-notice-description {
+  color: #c1d3df;
+}
+
+[data-theme="dark"] .login-notice-icon {
+  color: #67d7e7;
+}
+
+[data-theme="dark"] .login-label {
+  color: #d7e5ee;
+}
+
+html[data-theme="dark"] input.login-input {
+  border-color: #40596c !important;
+  background-color: #14283a !important;
+  color: #e7f2f8 !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] input.login-input::placeholder {
+  color: #9aafbf !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="dark"] input.login-input:hover {
+  border-color: #58758a !important;
+}
+
+html[data-theme="dark"] input.login-input:focus,
+html[data-theme="dark"] input.login-input:focus-visible {
+  border-color: #39c6d8 !important;
+  background-color: #14283a !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgb(57 198 216 / 25%) !important;
+}
+
+[data-theme="dark"] .login-password-toggle {
+  color: #a9bdcb;
+}
+
+[data-theme="dark"] .login-password-toggle:hover {
+  background-color: rgb(8 105 125 / 30%);
+  color: #9ce8f1;
+}
+
+[data-theme="dark"] .login-error {
+  border-color: rgb(190 63 94 / 55%);
+  background-color: rgb(136 19 55 / 26%);
+  color: #fda4af;
+}
+
+html[data-theme="dark"] input.login-input:-webkit-autofill,
+html[data-theme="dark"] input.login-input:-webkit-autofill:hover,
+html[data-theme="dark"] input.login-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #e7f2f8;
+  box-shadow: 0 0 0 1000px #14283a inset;
+  transition: background-color 9999s ease-out;
+}
+
 [data-theme="dark"] option {
   color: #e7f2f8;
   background: #152b3d;
@@ -228,6 +297,20 @@ body::after {
   bottom: -20rem;
   background: radial-gradient(circle, rgb(158 236 224 / 38%) 0%, rgb(158 236 224 / 0%) 70%);
   animation-delay: -8s;
+}
+
+.login-notice {
+  border: 1px solid rgb(8 124 150 / 18%);
+  background: rgb(8 174 202 / 7%);
+}
+
+.login-notice-title,
+.login-notice-icon {
+  color: #087c96;
+}
+
+.login-notice-description {
+  color: #52677d;
 }
 
 #root {

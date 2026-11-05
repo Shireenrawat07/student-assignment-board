@@ -1,17 +1,17 @@
 import { useState } from 'react'
 import { Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../auth/useAuth.js'
-import { demoUsers, getDashboardPath } from '../data/demoUsers.js'
-import { ThemeToggle } from '../components/index.js'
+import { useApp } from '../context/AppContext.jsx'
+import { demoUsers, getDashboardPath } from '../data/seedData.js'
+import { ThemeToggle } from '../components/Navbar.jsx'
 
-function LoginPage({ theme, onToggleTheme }) {
+function Login({ theme, onToggleTheme }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { login } = useAuth()
+  const { login } = useApp()
   const navigate = useNavigate()
 
   function handleSubmit(event) {
@@ -48,20 +48,23 @@ function LoginPage({ theme, onToggleTheme }) {
           <p className="mt-2 text-sm text-slate-600">Sign in to your assignment workspace.</p>
         </div>
 
-        <div className="mb-6 flex gap-3 rounded-xl border border-cyan-100 bg-cyan-50/80 p-3 text-sm text-cyan-950" role="note">
-          <ShieldCheck className="mt-0.5 shrink-0 text-cyan-800" aria-hidden="true" size={18} />
-          <p className="m-0 leading-5">
-            Demo login only. Accounts are local mock users and do not use real authentication.
-          </p>
+        <div className="login-notice mb-6 flex gap-3 rounded-xl p-3.5 text-sm" role="note">
+          <ShieldCheck className="login-notice-icon mt-0.5 shrink-0" aria-hidden="true" size={18} />
+          <div>
+            <p className="login-notice-title m-0 font-semibold">Demo environment</p>
+            <p className="login-notice-description mt-0.5 mb-0 leading-5">
+              Use the demo accounts provided below. No real authentication is required.
+            </p>
+          </div>
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700" htmlFor="login-email">
+            <label className="login-label mb-1.5 block text-sm font-medium text-slate-700" htmlFor="login-email">
               Email address
             </label>
             <input
-              className="min-h-12 w-full rounded-xl border border-sky-100 bg-white/80 px-4 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-sky-200 focus:border-cyan-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-cyan-100"
+              className="login-input min-h-12 w-full rounded-xl border border-sky-100 bg-white/80 px-4 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-sky-200 focus:border-cyan-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-cyan-100"
               id="login-email"
               name="email"
               type="email"
@@ -74,12 +77,12 @@ function LoginPage({ theme, onToggleTheme }) {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700" htmlFor="login-password">
+            <label className="login-label mb-1.5 block text-sm font-medium text-slate-700" htmlFor="login-password">
               Password
             </label>
             <div className="relative">
               <input
-                className="min-h-12 w-full rounded-xl border border-sky-100 bg-white/80 py-2.5 pr-12 pl-4 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-sky-200 focus:border-cyan-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-cyan-100"
+                className="login-input min-h-12 w-full rounded-xl border border-sky-100 bg-white/80 py-2.5 pr-12 pl-4 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 hover:border-sky-200 focus:border-cyan-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-cyan-100"
                 id="login-password"
                 name="password"
                 type={showPassword ? 'text' : 'password'}
@@ -90,7 +93,7 @@ function LoginPage({ theme, onToggleTheme }) {
                 required
               />
               <button
-                className="absolute top-1/2 right-2 grid size-9 -translate-y-1/2 place-items-center rounded-lg text-slate-500 transition-colors hover:bg-cyan-50 hover:text-cyan-800"
+                className="login-password-toggle absolute top-1/2 right-2 grid size-9 -translate-y-1/2 place-items-center rounded-lg text-slate-500 transition-colors hover:bg-cyan-50 hover:text-cyan-800"
                 type="button"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 aria-pressed={showPassword}
@@ -104,7 +107,7 @@ function LoginPage({ theme, onToggleTheme }) {
           </div>
 
           {errorMessage && (
-            <p className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-3 text-sm text-rose-800" role="alert">
+            <p className="login-error rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-3 text-sm text-rose-800" role="alert">
               {errorMessage}
             </p>
           )}
@@ -155,4 +158,4 @@ function LoginPage({ theme, onToggleTheme }) {
   )
 }
 
-export default LoginPage
+export default Login

@@ -1,19 +1,51 @@
 # Student Assignment & Review Dashboard
 
-A client-side assignment tracker built with React 19, React Router, Vite, and Tailwind CSS 4. It uses demo accounts and browser storage; it does not require a backend.
+## Project Overview
+
+The Student Assignment & Review Dashboard is a frontend application for managing assignments and tracking student submissions. It is built with React and uses mock account data, seeded assignments, and browser `localStorage` for persistence. There is no backend, and the demo login is not real authentication.
+
+## Features
+
+### Admin
+
+- Create, edit, and delete assignments owned by the signed-in admin.
+- Assign an assignment to all students or select individual students.
+- View each assigned student's submission status and assignment completion progress.
+- Search assignments, filter by completion status, and sort by due date.
+- See overdue assignments highlighted.
+
+### Student
+
+- View only assignments assigned to their account, including descriptions, due dates, status, and Google Drive links.
+- Confirm a submission through a two-step confirmation before updating its status.
+- Track assigned, pending, submitted, and overall completion counts.
+- Search assignments, filter by status, and sort by due date; overdue work is identified.
+
+### Shared
+
+- Switch between light and dark themes. The preference is saved in `localStorage`.
+- Use seeded demo data for two admin accounts and five student accounts; account details are shown on the login page without listing passwords here.
 
 ## Setup
 
-Requirements: Node.js 20.19+ (or 22.12+) and npm.
+### Prerequisites
+
+- Node.js 20.19+ or 22.12+
+- npm
+- Git
+
+### Install and run
 
 ```sh
+git clone https://github.com/Shireenrawat07/student-assignment-board.git
+cd student-assignment-board
 npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite. The sign-in page lists all demo accounts and passwords; choose an account to fill the form, then sign in. Use **Switch account** in the dashboard header to change roles or demo users.
+Open the local address printed by Vite. Choose a demo account from **View demo accounts** to fill in the login form. Use **Switch account** in a dashboard to return to the login page and select another role or account.
 
-## Validation
+### Validate the project
 
 ```sh
 npm test
@@ -21,30 +53,77 @@ npm run lint
 npm run build
 ```
 
-The tests use Node's built-in test runner, so no additional test dependencies are needed.
+Tests use Node.js's built-in test runner (`node --test`). The production build is created with Vite.
 
-## Demo accounts
-
-There are two admin accounts and five student accounts. All accounts and their demo passwords are displayed in the sign-in page under **View demo accounts**.
-
-## Folder structure
+## Folder Structure
 
 ```text
-src/
-  auth/          Mock sign-in, session context, and role-based route guards
-  assignments/  Assignment storage, provider, and authorization/business rules
-  components/   Shared dashboard, dialog, search, filter, progress, and theme UI
-  data/         Demo accounts and seeded assignments
-  pages/         Sign-in, admin dashboard, and student dashboard
-  App.jsx        Shared theme state, providers, and application routes
-  index.css      Light glassmorphism design, dark theme, and motion preferences
-tests/           Node tests for login, route access, creation, and submission rules
+student-assignment-board/
+├── src/
+│   ├── components/
+│   │   ├── AssignmentCard.jsx
+│   │   ├── AssignmentModal.jsx
+│   │   ├── ConfirmDialog.jsx
+│   │   ├── EmptyState.jsx
+│   │   ├── FilterBar.jsx
+│   │   ├── Navbar.jsx
+│   │   ├── ProgressBar.jsx
+│   │   ├── SearchBar.jsx
+│   │   └── StatCard.jsx
+│   ├── context/
+│   │   └── AppContext.jsx
+│   ├── data/
+│   │   └── seedData.js
+│   ├── pages/
+│   │   ├── AdminDashboard.jsx
+│   │   ├── Login.jsx
+│   │   └── StudentDashboard.jsx
+│   ├── utils/
+│   │   ├── assignmentRules.js
+│   │   └── storage.js
+│   ├── App.jsx
+│   ├── index.css
+│   └── main.jsx
+├── tests/
+│   ├── assignmentRules.test.js
+│   └── authService.test.js
+├── index.html
+├── package.json
+├── package-lock.json
+└── vite.config.js
 ```
 
-## Architecture and design choices
+- `src/components/` contains reusable interface elements shared across pages, such as assignment cards, dialogs, filters, progress bars, and navigation.
+- `src/context/AppContext.jsx` owns shared user and assignment state and its actions.
+- `src/data/seedData.js` defines demo users, initial assignments, and the role-based dashboard path helper.
+- `src/pages/` contains the login page and the separate admin and student dashboards.
+- `src/utils/storage.js` restores and saves the mock session, assignments, and submission updates in `localStorage`. It validates stored data, migrates legacy seeded assignment IDs, and reports storage errors. When assignment data and submission updates are saved together, it attempts to restore their previous values if either write fails.
+- `src/utils/assignmentRules.js` contains login, role, assignment ownership, student visibility, creation authorization, and submission validation rules.
+- `src/App.jsx` defines routes, redirects users according to their role, and manages the shared theme preference.
+- `src/main.jsx` mounts the router, `AppProvider`, and application.
+- `src/index.css` defines the light and dark themes, glassmorphism styling, and reduced-motion behavior.
+- `tests/` contains tests for the demo login and role checks, assignment access and creation, and student submission rules.
+- `package.json` defines scripts and dependencies; `vite.config.js` configures the React and Tailwind CSS Vite plugins.
 
-- Authentication is a local mock. The session stores the selected demo email in `localStorage`; route guards keep student and admin dashboards separate.
-- Assignment creation, editing, deletion, and submission are validated in the assignment provider and persisted in `localStorage`. Admin views are filtered by creator; student views are filtered by assignee.
-- Seed assignments supply the initial data. Submission updates are stored separately so a student's completion state survives refreshes and assignment edits.
-- The light theme retains the existing glass surfaces and cyan accents. Shared theme state in `App.jsx` drives the login and dashboard toggles and remembers the preference. Reduced-motion preferences disable animations and smooth scrolling.
-- Assignment data is read synchronously from local storage, so there is no asynchronous loading phase. Empty lists have dedicated empty states; storage and save failures are reported in the interface.
+## Component Architecture and Data Flow
+
+The application separates shared UI, page-level workflows, shared state, and data rules:
+
+1. `main.jsx` mounts `App` inside `BrowserRouter` and the single `AppProvider`.
+2. `AppProvider` initializes the current demo user and assignment data using `storage.js`. It exposes state and actions through the `useApp()` hook defined in the same `AppContext.jsx` file.
+3. `App.jsx` reads the current user through `useApp()`, then renders the login page or the dashboard that matches the user's role. It owns theme state and passes the selected theme and toggle callback to the pages.
+4. `Login.jsx`, `AdminDashboard.jsx`, and `StudentDashboard.jsx` use `useApp()` to read or update shared state. The dashboards apply search, filters, sorting, and presentation-specific progress calculations to that data.
+5. `assignmentRules.js` checks login, role permissions, assignment ownership and student visibility, and validates assignees and student submissions. `AdminDashboard.jsx` also validates assignment form fields, due dates, and Google Drive/Docs URLs; `AppContext.jsx` calls the rules before applying changes.
+6. Successful changes are written through `storage.js` to `localStorage`; React context updates then cause the relevant UI to render the new state.
+
+Reusable components in `components/` keep common interface patterns consistent between the two dashboards. Page components compose these shared elements while keeping each role's workflow separate.
+
+## Key Design Decisions
+
+- **React Context for shared state:** A single `AppProvider` makes the current user, assignments, and actions available to login and dashboard pages without passing them through many intermediate components.
+- **Local storage instead of a backend:** The project is a frontend-only demonstration. `localStorage` retains the mock session, assignment changes, submission updates, and theme preference across browser refreshes; it is not a server-side data store.
+- **Mock authentication:** Login checks the credentials against local demo users. It demonstrates role-specific flows but does not provide real authentication or account security.
+- **Role-based access and ownership:** `App.jsx` routes admins and students to their corresponding dashboards. Assignment rules limit admins to assignments they created and students to assignments assigned to them; submission actions also validate the student's identity and assignment eligibility.
+- **Reusable components and responsive layouts:** Shared cards, controls, dialogs, navigation, and progress components reduce repeated UI. Responsive Tailwind CSS classes adapt the layout to available screen sizes.
+- **Validation and persistence safety:** Assignment forms validate required fields, due dates, student selection, and HTTPS Google Drive/Docs URLs. Assignment rules check who may create or submit assignments and which students can be assigned. Storage helpers validate and migrate restored data, report storage errors, and attempt to restore previous assignment and submission values if a multi-key save fails.
+- **Visual and motion preferences:** The interface uses a light glassmorphism style with cyan accents, includes a persistent dark theme, and respects reduced-motion preferences.

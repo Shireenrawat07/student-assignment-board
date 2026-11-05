@@ -1,4 +1,18 @@
-import { demoUsers } from '../data/demoUsers.js'
+import { demoUsers } from '../data/seedData.js'
+
+export function authenticateDemoUser(email, password) {
+  return (
+    demoUsers.find(
+      (candidate) =>
+        candidate.email.toLowerCase() === email.trim().toLowerCase() &&
+        candidate.password === password,
+    ) ?? null
+  )
+}
+
+export function canAccessRole(user, allowedRole) {
+  return Boolean(user && (!allowedRole || user.role === allowedRole))
+}
 
 export function getAssignmentsForAdmin(assignments, currentUser) {
   return currentUser?.role === 'admin'

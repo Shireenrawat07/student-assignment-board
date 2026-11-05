@@ -6,9 +6,8 @@ import {
   createSubmissionUpdate,
   getAssignmentsForAdmin,
   getAssignmentsForStudent,
-} from '../src/assignments/assignmentRules.js'
-import { demoUsers } from '../src/data/demoUsers.js'
-import { seedAssignments } from '../src/data/assignments.js'
+} from '../src/utils/assignmentRules.js'
+import { demoUsers, seedAssignments } from '../src/data/seedData.js'
 
 const admin = demoUsers.find((user) => user.id === 'admin-sharma')
 const student = demoUsers.find((user) => user.id === 'student-aarav')

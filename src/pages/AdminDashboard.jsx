@@ -1,20 +1,17 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowDownWideNarrow, ClipboardList, FileCheck2, Pencil, Plus, Trash2, Users } from 'lucide-react'
-import { useAuth } from '../auth/useAuth.js'
-import {
-  AssignmentCard,
-  AssignmentModal,
-  ConfirmDialog,
-  EmptyState,
-  FilterBar,
-  Navbar,
-  SearchBar,
-  StatCard,
-} from '../components/index.js'
-import { demoUsers } from '../data/demoUsers.js'
-import { useAssignments } from '../assignments/useAssignments.js'
-import { getAssignmentsForAdmin } from '../assignments/assignmentRules.js'
+import { useApp } from '../context/AppContext.jsx'
+import AssignmentCard from '../components/AssignmentCard.jsx'
+import AssignmentModal from '../components/AssignmentModal.jsx'
+import ConfirmDialog from '../components/ConfirmDialog.jsx'
+import EmptyState from '../components/EmptyState.jsx'
+import FilterBar from '../components/FilterBar.jsx'
+import Navbar from '../components/Navbar.jsx'
+import SearchBar from '../components/SearchBar.jsx'
+import StatCard from '../components/StatCard.jsx'
+import { demoUsers } from '../data/seedData.js'
+import { getAssignmentsForAdmin } from '../utils/assignmentRules.js'
 
 const students = demoUsers.filter((user) => user.role === 'student')
 const filters = [
@@ -50,15 +47,7 @@ function formatDueDate(dateString) {
 }
 
 function AdminDashboard({ theme, onToggleTheme }) {
-  const { currentUser, logout } = useAuth()
-  const {
-    assignments,
-    updates,
-    storageError,
-    createAssignment,
-    updateAssignment,
-    deleteAssignment,
-  } = useAssignments()
+  const { currentUser, logout, assignments, updates, storageError, createAssignment, updateAssignment, deleteAssignment } = useApp()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')

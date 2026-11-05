@@ -1,19 +1,16 @@
 import { useMemo, useState } from 'react'
 import { ArrowDownWideNarrow, CheckCircle2, Clock3, FileCheck2, ListTodo } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import {
-  AssignmentCard,
-  ConfirmDialog,
-  EmptyState,
-  FilterBar,
-  Navbar,
-  ProgressBar,
-  SearchBar,
-  StatCard,
-} from '../components/index.js'
-import { useAuth } from '../auth/useAuth.js'
-import { useAssignments } from '../assignments/useAssignments.js'
-import { getAssignmentsForStudent } from '../assignments/assignmentRules.js'
+import AssignmentCard from '../components/AssignmentCard.jsx'
+import ConfirmDialog from '../components/ConfirmDialog.jsx'
+import EmptyState from '../components/EmptyState.jsx'
+import FilterBar from '../components/FilterBar.jsx'
+import Navbar from '../components/Navbar.jsx'
+import ProgressBar from '../components/ProgressBar.jsx'
+import SearchBar from '../components/SearchBar.jsx'
+import StatCard from '../components/StatCard.jsx'
+import { useApp } from '../context/AppContext.jsx'
+import { getAssignmentsForStudent } from '../utils/assignmentRules.js'
 
 const filters = [
   { value: 'all', label: 'All' },
@@ -40,8 +37,7 @@ function formatDueDate(dateString) {
 }
 
 function StudentDashboard({ theme, onToggleTheme }) {
-  const { currentUser, logout } = useAuth()
-  const { assignments, updates, storageError, markSubmitted } = useAssignments()
+  const { currentUser, logout, assignments, updates, storageError, markSubmitted } = useApp()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')

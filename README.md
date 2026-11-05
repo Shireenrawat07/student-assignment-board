@@ -45,15 +45,22 @@ npm run dev
 
 Open the local address printed by Vite. Choose a demo account from **View demo accounts** to fill in the login form. Use **Switch account** in a dashboard to return to the login page and select another role or account.
 
-### Validate the project
+### Testing
 
 ```sh
 npm test
+```
+
+This runs the automated tests for authentication, role-based access, assignment ownership and creation, and student submission rules.
+
+Run the linter and production build checks with:
+
+```sh
 npm run lint
 npm run build
 ```
 
-Tests use Node.js's built-in test runner (`node --test`). The production build is created with Vite.
+Tests use Node.js's built-in test runner (`node --test`), and the production build is created with Vite.
 
 ## Folder Structure
 

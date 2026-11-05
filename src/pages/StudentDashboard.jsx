@@ -13,6 +13,7 @@ import {
 } from '../components/index.js'
 import { useAuth } from '../auth/useAuth.js'
 import { useAssignments } from '../assignments/useAssignments.js'
+import { getAssignmentsForStudent } from '../assignments/assignmentRules.js'
 
 const filters = [
   { value: 'all', label: 'All' },
@@ -38,9 +39,9 @@ function formatDueDate(dateString) {
   }).format(new Date(`${dateString}T00:00:00Z`))
 }
 
-function StudentDashboard() {
+function StudentDashboard({ theme, onToggleTheme }) {
   const { currentUser, logout } = useAuth()
-  const { assignments, updates, markSubmitted } = useAssignments()
+  const { assignments, updates, storageError, markSubmitted } = useAssignments()
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
@@ -52,8 +53,7 @@ function StudentDashboard() {
 
   const studentAssignments = useMemo(
     () =>
-      assignments
-        .filter((assignment) => assignment.assignedStudentIds.includes(currentUser.id))
+      getAssignmentsForStudent(assignments, currentUser)
         .map((assignment) => {
           const status =
             updates[assignment.id]?.[currentUser.id] ??
@@ -62,7 +62,7 @@ function StudentDashboard() {
           const isOverdue = status !== 'submitted' && assignment.dueDate < today
           return { ...assignment, status, isOverdue }
         }),
-    [assignments, currentUser.id, today, updates],
+    [assignments, currentUser, today, updates],
   )
 
   const submittedCount = studentAssignments.filter((assignment) => assignment.status === 'submitted').length
@@ -73,7 +73,9 @@ function StudentDashboard() {
   const visibleAssignments = useMemo(() => {
     const query = search.trim().toLowerCase()
     return studentAssignments
-      .filter((assignment) => assignment.title.toLowerCase().includes(query))
+      .filter((assignment) =>
+        `${assignment.title} ${assignment.description}`.toLowerCase().includes(query),
+      )
       .filter((assignment) => {
         if (filter === 'submitted') return assignment.status === 'submitted'
         if (filter === 'overdue') return assignment.isOverdue
@@ -88,6 +90,11 @@ function StudentDashboard() {
   }, [filter, search, sortOrder, studentAssignments])
 
   function handleLogout() {
+    logout()
+    navigate('/', { replace: true })
+  }
+
+  function handleSwitchAccount() {
     logout()
     navigate('/', { replace: true })
   }
@@ -135,8 +142,16 @@ function StudentDashboard() {
         userRole="Student"
         role="student"
         onLogout={handleLogout}
+        onSwitchAccount={handleSwitchAccount}
+        theme={theme}
+        onToggleTheme={onToggleTheme}
       />
       <main className="mx-auto w-full max-w-7xl px-0 py-8 sm:py-10">
+        {storageError && (
+          <p className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800" role="alert">
+            {storageError}
+          </p>
+        )}
         <section className="animate-enter">
           <p className="text-sm font-semibold text-cyan-800">Student dashboard</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
@@ -182,7 +197,7 @@ function StudentDashboard() {
                 className="w-full lg:max-w-sm"
                 value={search}
                 onChange={setSearch}
-                label="Search assignments by title"
+                label="Search assignments by title or description"
                 placeholder="Search assignments"
               />
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

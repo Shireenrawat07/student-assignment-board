@@ -32,6 +32,22 @@
   --motion-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-background: #0c1a28;
+  --color-background-soft: #132536;
+  --color-text-primary: #e7f2f8;
+  --color-text-secondary: #b6c8d6;
+  --color-text-muted: #91a8ba;
+  --glass-background: rgb(18 38 55 / 82%);
+  --glass-background-strong: rgb(25 51 71 / 92%);
+  --glass-border: rgb(90 139 164 / 36%);
+  --border-subtle: rgb(90 139 164 / 32%);
+  --shadow-soft: 0 12px 36px -20px rgb(0 0 0 / 55%);
+  --shadow-glass: 0 24px 80px -32px rgb(0 0 0 / 58%);
+  --shadow-glass-hover: 0 28px 84px -30px rgb(0 0 0 / 66%);
+}
+
 html {
   min-width: 320px;
   min-height: 100%;
@@ -47,6 +63,146 @@ body {
     linear-gradient(135deg, #f8fdff 0%, var(--color-background) 52%, #f5fcff 100%);
   font-size: 1rem;
   line-height: 1.6;
+}
+
+[data-theme="dark"] body {
+  background:
+    linear-gradient(135deg, #101f2e 0%, var(--color-background) 52%, #10272d 100%);
+}
+
+[data-theme="dark"] body::before {
+  background: radial-gradient(circle, rgb(26 111 143 / 23%) 0%, rgb(26 111 143 / 0%) 70%);
+}
+
+[data-theme="dark"] body::after {
+  background: radial-gradient(circle, rgb(29 126 116 / 18%) 0%, rgb(29 126 116 / 0%) 70%);
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6,
+[data-theme="dark"] .text-slate-900 {
+  color: #e7f2f8;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] .text-slate-700,
+[data-theme="dark"] .text-slate-600 {
+  color: #b6c8d6;
+}
+
+[data-theme="dark"] .text-slate-800 {
+  color: #d7e5ee;
+}
+
+[data-theme="dark"] .text-slate-500,
+[data-theme="dark"] .text-slate-400 {
+  color: #91a8ba;
+}
+
+[data-theme="dark"] .text-cyan-800,
+[data-theme="dark"] .text-cyan-900,
+[data-theme="dark"] .text-cyan-950 {
+  color: #67d7e7;
+}
+
+[data-theme="dark"] .text-rose-700,
+[data-theme="dark"] .text-rose-800 {
+  color: #fda4af;
+}
+
+[data-theme="dark"] .text-emerald-800 {
+  color: #6ee7b7;
+}
+
+[data-theme="dark"] .text-amber-700,
+[data-theme="dark"] .text-amber-800 {
+  color: #fcd34d;
+}
+
+[data-theme="dark"] [class~="bg-white/45"],
+[data-theme="dark"] [class~="bg-white/55"],
+[data-theme="dark"] [class~="bg-white/60"],
+[data-theme="dark"] [class~="bg-white/70"],
+[data-theme="dark"] [class~="bg-white/75"],
+[data-theme="dark"] [class~="bg-white/80"],
+[data-theme="dark"] [class~="bg-white/85"],
+[data-theme="dark"] .bg-white {
+  background-color: rgb(21 43 61 / 82%);
+}
+
+[data-theme="dark"] .bg-cyan-50 {
+  background-color: rgb(8 105 125 / 24%);
+}
+
+[data-theme="dark"] .bg-cyan-100 {
+  background-color: rgb(8 105 125 / 36%);
+}
+
+[data-theme="dark"] .bg-sky-100 {
+  background-color: rgb(90 139 164 / 24%);
+}
+
+[data-theme="dark"] .bg-emerald-50 {
+  background-color: rgb(6 95 70 / 28%);
+}
+
+[data-theme="dark"] .bg-amber-50 {
+  background-color: rgb(120 74 5 / 28%);
+}
+
+[data-theme="dark"] .bg-rose-50 {
+  background-color: rgb(136 19 55 / 26%);
+}
+
+[data-theme="dark"] .border-sky-100,
+[data-theme="dark"] [class~="border-sky-100/80"],
+[data-theme="dark"] [class~="border-sky-100/70"],
+[data-theme="dark"] .border-cyan-100 {
+  border-color: rgb(90 139 164 / 34%);
+}
+
+[data-theme="dark"] .border-cyan-200 {
+  border-color: rgb(41 173 190 / 50%);
+}
+
+[data-theme="dark"] .border-rose-100 {
+  border-color: rgb(190 63 94 / 45%);
+}
+
+[data-theme="dark"] .border-amber-200 {
+  border-color: rgb(180 126 30 / 54%);
+}
+
+[data-theme="dark"] .divide-sky-100\/70 > :not(:last-child) {
+  border-color: rgb(90 139 164 / 28%);
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  color: #e7f2f8;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #91a8ba;
+}
+
+[data-theme="dark"] option {
+  color: #e7f2f8;
+  background: #152b3d;
+}
+
+[data-theme="dark"] dialog {
+  color: #d7e5ee;
+}
+
+[data-theme="dark"] dialog::backdrop {
+  background: rgb(0 8 16 / 58%);
 }
 
 body::before,
@@ -137,6 +293,16 @@ dialog::backdrop {
     transform 220ms var(--motion-ease);
 }
 
+.glass-surface[open] {
+  animation: dialog-enter 180ms var(--motion-ease) both;
+}
+
+button[class~="transition-colors"] {
+  transition-property: color, background-color, border-color, transform, box-shadow;
+  transition-duration: 180ms;
+  transition-timing-function: var(--motion-ease);
+}
+
 .animate-enter {
   animation: enter-soft 600ms var(--motion-ease) both;
 }
@@ -163,11 +329,32 @@ dialog::backdrop {
   }
 }
 
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @media (hover: hover) {
   .glass-surface:hover {
     border-color: var(--glass-background-strong);
     box-shadow: var(--shadow-glass-hover);
+    transform: translateY(-2px);
   }
+
+  button[class~="transition-colors"]:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+}
+
+button[class~="transition-colors"]:not(:disabled):active {
+  transform: scale(0.98);
 }
 
 @media (prefers-reduced-motion: reduce) {

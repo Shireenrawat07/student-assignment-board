@@ -14,6 +14,7 @@ import {
 } from '../components/index.js'
 import { demoUsers } from '../data/demoUsers.js'
 import { useAssignments } from '../assignments/useAssignments.js'
+import { getAssignmentsForAdmin } from '../assignments/assignmentRules.js'
 
 const students = demoUsers.filter((user) => user.role === 'student')
 const filters = [
@@ -48,11 +49,12 @@ function formatDueDate(dateString) {
   }).format(new Date(`${dateString}T00:00:00Z`))
 }
 
-function AdminDashboard() {
+function AdminDashboard({ theme, onToggleTheme }) {
   const { currentUser, logout } = useAuth()
   const {
     assignments,
     updates,
+    storageError,
     createAssignment,
     updateAssignment,
     deleteAssignment,
@@ -72,8 +74,7 @@ function AdminDashboard() {
 
   const adminAssignments = useMemo(
     () =>
-      assignments
-        .filter((assignment) => assignment.creatorId === currentUser.id)
+      getAssignmentsForAdmin(assignments, currentUser)
         .map((assignment) => {
           const submittedCount = assignment.assignedStudentIds.filter(
             (studentId) =>
@@ -86,7 +87,7 @@ function AdminDashboard() {
             isOverdue ? 'overdue' : submittedCount === 0 ? 'pending' : submittedCount === totalStudents ? 'completed' : 'in-progress'
           return { ...assignment, submittedCount, totalStudents, percentage, isOverdue, completionState }
         }),
-    [assignments, currentUser.id, today, updates],
+    [assignments, currentUser, today, updates],
   )
 
   const assignedStudentCount = new Set(
@@ -100,7 +101,9 @@ function AdminDashboard() {
   const visibleAssignments = useMemo(() => {
     const query = search.trim().toLowerCase()
     return adminAssignments
-      .filter((assignment) => assignment.title.toLowerCase().includes(query))
+      .filter((assignment) =>
+        `${assignment.title} ${assignment.description}`.toLowerCase().includes(query),
+      )
       .filter((assignment) => filter === 'all' || assignment.completionState === filter)
       .sort((first, second) =>
         sortOrder === 'earliest'
@@ -110,6 +113,11 @@ function AdminDashboard() {
   }, [adminAssignments, filter, search, sortOrder])
 
   function handleLogout() {
+    logout()
+    navigate('/', { replace: true })
+  }
+
+  function handleSwitchAccount() {
     logout()
     navigate('/', { replace: true })
   }
@@ -228,8 +236,16 @@ function AdminDashboard() {
         userRole="Admin"
         role="admin"
         onLogout={handleLogout}
+        onSwitchAccount={handleSwitchAccount}
+        theme={theme}
+        onToggleTheme={onToggleTheme}
       />
       <main className="mx-auto w-full max-w-7xl px-0 py-8 sm:py-10">
+        {storageError && (
+          <p className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800" role="alert">
+            {storageError}
+          </p>
+        )}
         <section className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div className="animate-enter">
             <p className="text-sm font-semibold text-cyan-800">Admin dashboard</p>
@@ -301,7 +317,7 @@ function AdminDashboard() {
               className="w-full lg:max-w-sm"
               value={search}
               onChange={setSearch}
-              label="Search assignments by title"
+              label="Search assignments by title or description"
               placeholder="Search your assignments"
             />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

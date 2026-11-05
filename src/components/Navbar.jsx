@@ -1,6 +1,7 @@
-import { BookOpenCheck, LayoutDashboard, LogOut } from 'lucide-react'
+import { BookOpenCheck, LayoutDashboard, LogOut, UserRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { getDashboardPath } from '../data/demoUsers.js'
+import ThemeToggle from './ThemeToggle.jsx'
 
 function getInitials(name) {
   return name
@@ -19,6 +20,9 @@ function Navbar({
   role,
   avatarUrl,
   onLogout,
+  onSwitchAccount,
+  theme,
+  onToggleTheme,
 }) {
   const dashboardPath = getDashboardPath(role)
 
@@ -47,7 +51,8 @@ function Navbar({
         </Link>
       </nav>
 
-      <div className="ml-auto flex items-center gap-3 sm:ml-0 sm:gap-4">
+      <div className="ml-auto flex items-center gap-2 sm:ml-0 sm:gap-3">
+        <ThemeToggle theme={theme} onToggle={onToggleTheme} />
         <div className="flex min-w-0 items-center gap-2.5">
           {avatarUrl ? (
             <img
@@ -70,6 +75,16 @@ function Navbar({
             <span className="block text-[10px] text-slate-500 sm:text-xs">{userRole || 'Role not set'}</span>
           </span>
         </div>
+        <button
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-sky-100 bg-white/70 px-3 text-sm font-medium text-slate-700 transition-colors hover:border-cyan-200 hover:bg-cyan-50"
+          type="button"
+          onClick={onSwitchAccount}
+          aria-label="Switch account"
+          title="Switch account"
+        >
+          <UserRound aria-hidden="true" size={17} />
+          <span className="hidden sm:inline">Switch account</span>
+        </button>
         <button
           className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-sky-100 bg-white/70 px-3 text-sm font-medium text-slate-600 transition-colors hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-900 disabled:cursor-not-allowed disabled:opacity-55"
           type="button"

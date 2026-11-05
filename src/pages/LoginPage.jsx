@@ -3,8 +3,9 @@ import { Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth.js'
 import { demoUsers, getDashboardPath } from '../data/demoUsers.js'
+import { ThemeToggle } from '../components/index.js'
 
-function LoginPage() {
+function LoginPage({ theme, onToggleTheme }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -29,7 +30,12 @@ function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
+    <main className="relative flex min-h-screen items-center justify-center px-4 py-14 sm:px-6">
+      <ThemeToggle
+        theme={theme}
+        onToggle={onToggleTheme}
+        className="absolute top-4 right-4 sm:top-6 sm:right-6"
+      />
       <section className="glass-surface animate-enter w-full max-w-md rounded-3xl p-6 sm:p-9">
         <div className="mb-7 text-center">
           <span className="mx-auto mb-4 grid size-14 place-items-center rounded-2xl bg-cyan-100 text-cyan-800">
@@ -128,6 +134,17 @@ function LoginPage() {
                   <span className="text-xs text-slate-600">
                     Password: <code className="rounded bg-cyan-50 px-1.5 py-0.5 font-mono text-cyan-900">{user.password}</code>
                   </span>
+                  <button
+                    className="mt-1 min-h-9 self-start rounded-lg px-2 text-xs font-semibold text-cyan-800 transition-colors hover:bg-cyan-50"
+                    type="button"
+                    onClick={() => {
+                      setEmail(user.email)
+                      setPassword(user.password)
+                      setErrorMessage('')
+                    }}
+                  >
+                    Use this account
+                  </button>
                 </li>
               ))}
             </ul>

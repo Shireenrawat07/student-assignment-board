@@ -7,6 +7,11 @@ import {
   ASSIGNMENTS_STORAGE_KEY,
   SUBMISSION_STORAGE_KEY,
 } from './assignmentContext.js'
+import {
+  canManageAssignment,
+  createAssignmentRecord,
+  createSubmissionUpdate,
+} from './assignmentRules.js'
 
 const LEGACY_SEEDED_ASSIGNMENT_IDS = {
   'assignment-data-structures': 'react-fundamentals',
@@ -61,7 +66,7 @@ function mergeDuplicateAssignments(existing, incoming) {
 function getStoredAssignments() {
   try {
     const stored = window.localStorage.getItem(ASSIGNMENTS_STORAGE_KEY)
-    if (!stored) return { assignments: seedAssignments, deletedIds: [] }
+    if (!stored) return { assignments: seedAssignments, deletedIds: [], error: '' }
 
     const parsed = JSON.parse(stored)
     if (!parsed || !Array.isArray(parsed.assignments) || !Array.isArray(parsed.deletedIds)) {
@@ -136,17 +141,21 @@ function getStoredAssignments() {
       }
     }
 
-    return { assignments: [...assignmentsById.values()], deletedIds }
+    return { assignments: [...assignmentsById.values()], deletedIds, error: '' }
   } catch (error) {
     console.error('Unable to restore assignments from local storage.', error)
-    return { assignments: seedAssignments, deletedIds: [] }
+    return {
+      assignments: seedAssignments,
+      deletedIds: [],
+      error: 'Saved assignments could not be loaded. Seed data is shown instead.',
+    }
   }
 }
 
 function getStoredUpdates(assignments) {
   try {
     const stored = window.localStorage.getItem(SUBMISSION_STORAGE_KEY)
-    if (!stored) return {}
+    if (!stored) return { updates: {}, error: '' }
 
     const parsed = JSON.parse(stored)
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
@@ -180,16 +189,25 @@ function getStoredUpdates(assignments) {
       }
     }
 
-    return migratedUpdates
+    return { updates: migratedUpdates, error: '' }
   } catch (error) {
     console.error('Unable to restore assignment submissions from local storage.', error)
-    return {}
+    return {
+      updates: {},
+      error: 'Saved submission updates could not be loaded. Submission progress may be incomplete.',
+    }
   }
 }
 
 function getInitialState() {
-  const { assignments, deletedIds } = getStoredAssignments()
-  return { assignments, deletedIds, updates: getStoredUpdates(assignments) }
+  const { assignments, deletedIds, error: assignmentError } = getStoredAssignments()
+  const { updates, error: submissionError } = getStoredUpdates(assignments)
+  return {
+    assignments,
+    deletedIds,
+    updates,
+    storageError: [assignmentError, submissionError].filter(Boolean).join(' '),
+  }
 }
 
 function persistAssignmentChanges(nextState, shouldSaveUpdates = false) {
@@ -238,29 +256,13 @@ export function AssignmentProvider({ children }) {
   const [state, setState] = useState(getInitialState)
 
   const markSubmitted = useCallback((assignmentId, studentId) => {
-    if (currentUser?.role !== 'student' || currentUser.id !== studentId) {
-      return { success: false, error: 'You can only submit assignments for your own student account.' }
-    }
-
     const assignment = state.assignments.find((item) => item.id === assignmentId)
-    if (!assignment || !assignment.assignedStudentIds.includes(studentId)) {
-      return { success: false, error: 'This assignment is not assigned to this student.' }
-    }
-
-    const existingStatus = state.updates[assignmentId]?.[studentId] ?? assignment.submissions[studentId]
-    if (existingStatus === 'submitted') {
-      return { success: false, error: 'This assignment has already been submitted.' }
-    }
+    const submission = createSubmissionUpdate(assignment, state.updates, studentId, currentUser)
+    if (!submission.success) return submission
 
     const nextState = {
       ...state,
-      updates: {
-        ...state.updates,
-        [assignmentId]: {
-          ...state.updates[assignmentId],
-          [studentId]: 'submitted',
-        },
-      },
+      updates: submission.updates,
     }
 
     try {
@@ -275,22 +277,10 @@ export function AssignmentProvider({ children }) {
   }, [currentUser, state])
 
   const createAssignment = useCallback((details) => {
-    if (currentUser?.role !== 'admin') {
-      return { success: false, error: 'Only admins can create assignments.' }
-    }
-    const studentIds = [...new Set(details.assignedStudentIds)]
-    if (!studentIds.length) return { success: false, error: 'Select at least one student.' }
-    if (studentIds.some((id) => !demoUsers.some((user) => user.id === id && user.role === 'student'))) {
-      return { success: false, error: 'The student selection is invalid.' }
-    }
+    const creation = createAssignmentRecord(details, currentUser)
+    if (!creation.success) return creation
 
-    const assignment = {
-      ...details,
-      id: crypto.randomUUID(),
-      creatorId: currentUser.id,
-      assignedStudentIds: studentIds,
-      submissions: Object.fromEntries(studentIds.map((id) => [id, 'pending'])),
-    }
+    const { assignment } = creation
     const nextState = {
       ...state,
       assignments: [...state.assignments, assignment],
@@ -306,7 +296,7 @@ export function AssignmentProvider({ children }) {
       return { success: false, error: 'Only admins can edit assignments.' }
     }
     const existing = state.assignments.find((assignment) => assignment.id === assignmentId)
-    if (!existing || existing.creatorId !== currentUser.id) {
+    if (!canManageAssignment(existing, currentUser)) {
       return { success: false, error: 'You can only edit assignments you created.' }
     }
 
@@ -343,7 +333,7 @@ export function AssignmentProvider({ children }) {
       return { success: false, error: 'Only admins can delete assignments.' }
     }
     const existing = state.assignments.find((assignment) => assignment.id === assignmentId)
-    if (!existing || existing.creatorId !== currentUser.id) {
+    if (!canManageAssignment(existing, currentUser)) {
       return { success: false, error: 'You can only delete assignments you created.' }
     }
 
@@ -363,6 +353,7 @@ export function AssignmentProvider({ children }) {
     () => ({
       assignments: state.assignments,
       updates: state.updates,
+      storageError: state.storageError,
       markSubmitted,
       createAssignment,
       updateAssignment,

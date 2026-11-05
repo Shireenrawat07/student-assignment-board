@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from './useAuth.js'
+import { canAccessRole } from './authService.js'
 import { getDashboardPath } from '../data/demoUsers.js'
 
 export function RequireAuth({ allowedRole }) {
@@ -10,7 +11,7 @@ export function RequireAuth({ allowedRole }) {
     return <Navigate to="/" replace state={{ from: location }} />
   }
 
-  if (allowedRole && currentUser.role !== allowedRole) {
+  if (!canAccessRole(currentUser, allowedRole)) {
     return <Navigate to={getDashboardPath(currentUser.role)} replace />
   }
 

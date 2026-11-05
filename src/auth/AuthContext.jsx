@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { AuthContext, SESSION_KEY } from './authContext.js'
+import { authenticateDemoUser } from './authService.js'
 import { demoUsers } from '../data/demoUsers.js'
 
 function getStoredUser() {
@@ -16,11 +17,7 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(getStoredUser)
 
   const login = useCallback((email, password) => {
-    const user = demoUsers.find(
-      (candidate) =>
-        candidate.email.toLowerCase() === email.trim().toLowerCase() &&
-        candidate.password === password,
-    )
+    const user = authenticateDemoUser(email, password)
 
     if (!user) {
       return { success: false, error: 'The email or password is incorrect. Check the demo accounts and try again.' }

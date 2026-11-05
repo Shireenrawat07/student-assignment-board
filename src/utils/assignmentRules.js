@@ -33,6 +33,40 @@ export function getPendingSubmissionCount(assignment, updates = {}) {
   ).length
 }
 
+export function getAdminAssignmentProgress(assignment, updates = {}, today) {
+  const totalStudents = assignment.assignedStudentIds.length
+  const pendingSubmissionCount = getPendingSubmissionCount(assignment, updates)
+  const submittedCount = totalStudents - pendingSubmissionCount
+  const percentage = totalStudents ? Math.round((submittedCount / totalStudents) * 100) : 0
+  const isOverdue = totalStudents > 0 && assignment.dueDate < today && pendingSubmissionCount > 0
+  const completionState =
+    totalStudents === 0
+      ? 'unassigned'
+      : isOverdue
+        ? 'overdue'
+        : submittedCount === 0
+          ? 'pending'
+          : pendingSubmissionCount === 0
+            ? 'completed'
+            : 'in-progress'
+
+  return {
+    submittedCount,
+    totalStudents,
+    pendingSubmissionCount,
+    percentage,
+    isOverdue,
+    completionState,
+  }
+}
+
+export function matchesAdminAssignmentFilter(assignment, filter) {
+  if (filter === 'all') return true
+  if (filter === 'pending') return assignment.pendingSubmissionCount > 0
+  if (filter === 'overdue') return assignment.isOverdue
+  return assignment.completionState === filter
+}
+
 export function canManageAssignment(assignment, currentUser) {
   return currentUser?.role === 'admin' && assignment?.creatorId === currentUser.id
 }

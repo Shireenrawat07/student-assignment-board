@@ -4,9 +4,11 @@ import {
   canManageAssignment,
   createAssignmentRecord,
   createSubmissionUpdate,
+  getAdminAssignmentProgress,
   getAssignmentsForAdmin,
   getAssignmentsForStudent,
   getPendingSubmissionCount,
+  matchesAdminAssignmentFilter,
 } from '../src/utils/assignmentRules.js'
 import { demoUsers, seedAssignments } from '../src/data/seedData.js'
 
@@ -155,4 +157,71 @@ test('pending submission count matches outstanding work and excludes assignments
     getPendingSubmissionCount({ ...assignment, assignedStudentIds: [] }),
     0,
   )
+})
+
+test('admin pending filter includes mixed student statuses based on outstanding submissions', () => {
+  const secondStudent = demoUsers.find((user) => user.id === 'student-priya')
+  const assignment = {
+    id: 'assignment-mixed-statuses',
+    dueDate: '2026-11-15',
+    assignedStudentIds: [student.id, secondStudent.id],
+    submissions: {
+      [student.id]: 'submitted',
+      [secondStudent.id]: 'pending',
+    },
+  }
+  const progress = getAdminAssignmentProgress(assignment, {}, '2026-11-05')
+
+  assert.equal(progress.pendingSubmissionCount, 1)
+  assert.equal(progress.completionState, 'in-progress')
+  assert.equal(progress.isOverdue, false)
+  assert.equal(matchesAdminAssignmentFilter({ ...assignment, ...progress }, 'pending'), true)
+  assert.equal(matchesAdminAssignmentFilter({ ...assignment, ...progress }, 'overdue'), false)
+  assert.equal(matchesAdminAssignmentFilter({ ...assignment, ...progress }, 'completed'), false)
+})
+
+test('admin overdue filter requires a past due date and at least one outstanding submission', () => {
+  const secondStudent = demoUsers.find((user) => user.id === 'student-priya')
+  const assignment = {
+    id: 'assignment-overdue-mixed-statuses',
+    dueDate: '2026-10-30',
+    assignedStudentIds: [student.id, secondStudent.id],
+    submissions: {
+      [student.id]: 'submitted',
+      [secondStudent.id]: 'pending',
+    },
+  }
+  const progress = getAdminAssignmentProgress(assignment, {}, '2026-11-05')
+  const overdueAssignment = { ...assignment, ...progress }
+  const completedAssignment = {
+    ...assignment,
+    submissions: { [student.id]: 'submitted', [secondStudent.id]: 'submitted' },
+  }
+  const completedProgress = getAdminAssignmentProgress(completedAssignment, {}, '2026-11-05')
+
+  assert.equal(progress.isOverdue, true)
+  assert.equal(matchesAdminAssignmentFilter(overdueAssignment, 'overdue'), true)
+  assert.equal(matchesAdminAssignmentFilter(overdueAssignment, 'pending'), true)
+  assert.equal(completedProgress.isOverdue, false)
+  assert.equal(
+    matchesAdminAssignmentFilter({ ...completedAssignment, ...completedProgress }, 'overdue'),
+    false,
+  )
+})
+
+test('assignments without students are neither pending nor overdue', () => {
+  const assignment = {
+    id: 'assignment-without-students',
+    dueDate: '2026-10-30',
+    assignedStudentIds: [],
+    submissions: {},
+  }
+  const progress = getAdminAssignmentProgress(assignment, {}, '2026-11-05')
+  const dashboardAssignment = { ...assignment, ...progress }
+
+  assert.equal(progress.pendingSubmissionCount, 0)
+  assert.equal(progress.isOverdue, false)
+  assert.equal(progress.completionState, 'unassigned')
+  assert.equal(matchesAdminAssignmentFilter(dashboardAssignment, 'pending'), false)
+  assert.equal(matchesAdminAssignmentFilter(dashboardAssignment, 'overdue'), false)
 })

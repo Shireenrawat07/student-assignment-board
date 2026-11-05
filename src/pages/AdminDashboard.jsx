@@ -11,7 +11,11 @@ import Navbar from '../components/Navbar.jsx'
 import SearchBar from '../components/SearchBar.jsx'
 import StatCard from '../components/StatCard.jsx'
 import { demoUsers } from '../data/seedData.js'
-import { getAssignmentsForAdmin, getPendingSubmissionCount } from '../utils/assignmentRules.js'
+import {
+  getAdminAssignmentProgress,
+  getAssignmentsForAdmin,
+  matchesAdminAssignmentFilter,
+} from '../utils/assignmentRules.js'
 
 const students = demoUsers.filter((user) => user.role === 'student')
 const filters = [
@@ -64,19 +68,10 @@ function AdminDashboard({ theme, onToggleTheme }) {
   const adminAssignments = useMemo(
     () =>
       getAssignmentsForAdmin(assignments, currentUser)
-        .map((assignment) => {
-          const submittedCount = assignment.assignedStudentIds.filter(
-            (studentId) =>
-              (updates[assignment.id]?.[studentId] ?? assignment.submissions[studentId]) === 'submitted',
-          ).length
-          const totalStudents = assignment.assignedStudentIds.length
-          const pendingSubmissionCount = getPendingSubmissionCount(assignment, updates)
-          const percentage = totalStudents ? Math.round((submittedCount / totalStudents) * 100) : 0
-          const isOverdue = assignment.dueDate < today && submittedCount < totalStudents
-          const completionState =
-            isOverdue ? 'overdue' : submittedCount === 0 ? 'pending' : submittedCount === totalStudents ? 'completed' : 'in-progress'
-          return { ...assignment, submittedCount, totalStudents, pendingSubmissionCount, percentage, isOverdue, completionState }
-        }),
+        .map((assignment) => ({
+          ...assignment,
+          ...getAdminAssignmentProgress(assignment, updates, today),
+        })),
     [assignments, currentUser, today, updates],
   )
 
@@ -97,12 +92,7 @@ function AdminDashboard({ theme, onToggleTheme }) {
       .filter((assignment) =>
         `${assignment.title} ${assignment.description}`.toLowerCase().includes(query),
       )
-      .filter((assignment) =>
-        filter === 'all' ||
-        (filter === 'pending'
-          ? assignment.pendingSubmissionCount > 0
-          : assignment.completionState === filter),
-      )
+      .filter((assignment) => matchesAdminAssignmentFilter(assignment, filter))
       .sort((first, second) =>
         sortOrder === 'earliest'
           ? first.dueDate.localeCompare(second.dueDate)
@@ -365,6 +355,8 @@ function AdminDashboard({ theme, onToggleTheme }) {
               visibleAssignments.map((assignment) => {
                 const status = assignment.isOverdue
                   ? 'Overdue'
+                  : assignment.completionState === 'unassigned'
+                    ? 'No students assigned'
                   : assignment.completionState === 'completed'
                     ? 'Complete'
                     : assignment.completionState === 'in-progress'
@@ -372,6 +364,8 @@ function AdminDashboard({ theme, onToggleTheme }) {
                       : 'Pending'
                 const tone = assignment.isOverdue
                   ? 'overdue'
+                  : assignment.completionState === 'unassigned'
+                    ? 'neutral'
                   : assignment.completionState === 'completed'
                     ? 'success'
                     : assignment.completionState === 'in-progress'

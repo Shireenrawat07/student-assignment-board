@@ -11,7 +11,7 @@ import Navbar from '../components/Navbar.jsx'
 import SearchBar from '../components/SearchBar.jsx'
 import StatCard from '../components/StatCard.jsx'
 import { demoUsers } from '../data/seedData.js'
-import { getAssignmentsForAdmin } from '../utils/assignmentRules.js'
+import { getAssignmentsForAdmin, getPendingSubmissionCount } from '../utils/assignmentRules.js'
 
 const students = demoUsers.filter((user) => user.role === 'student')
 const filters = [
@@ -70,11 +70,12 @@ function AdminDashboard({ theme, onToggleTheme }) {
               (updates[assignment.id]?.[studentId] ?? assignment.submissions[studentId]) === 'submitted',
           ).length
           const totalStudents = assignment.assignedStudentIds.length
+          const pendingSubmissionCount = getPendingSubmissionCount(assignment, updates)
           const percentage = totalStudents ? Math.round((submittedCount / totalStudents) * 100) : 0
           const isOverdue = assignment.dueDate < today && submittedCount < totalStudents
           const completionState =
             isOverdue ? 'overdue' : submittedCount === 0 ? 'pending' : submittedCount === totalStudents ? 'completed' : 'in-progress'
-          return { ...assignment, submittedCount, totalStudents, percentage, isOverdue, completionState }
+          return { ...assignment, submittedCount, totalStudents, pendingSubmissionCount, percentage, isOverdue, completionState }
         }),
     [assignments, currentUser, today, updates],
   )
@@ -84,7 +85,10 @@ function AdminDashboard({ theme, onToggleTheme }) {
   ).size
   const submittedCount = adminAssignments.reduce((total, assignment) => total + assignment.submittedCount, 0)
   const assignedCount = adminAssignments.reduce((total, assignment) => total + assignment.totalStudents, 0)
-  const pendingCount = assignedCount - submittedCount
+  const pendingCount = adminAssignments.reduce(
+    (total, assignment) => total + assignment.pendingSubmissionCount,
+    0,
+  )
   const overallCompletion = assignedCount ? Math.round((submittedCount / assignedCount) * 100) : 0
 
   const visibleAssignments = useMemo(() => {
@@ -93,7 +97,12 @@ function AdminDashboard({ theme, onToggleTheme }) {
       .filter((assignment) =>
         `${assignment.title} ${assignment.description}`.toLowerCase().includes(query),
       )
-      .filter((assignment) => filter === 'all' || assignment.completionState === filter)
+      .filter((assignment) =>
+        filter === 'all' ||
+        (filter === 'pending'
+          ? assignment.pendingSubmissionCount > 0
+          : assignment.completionState === filter),
+      )
       .sort((first, second) =>
         sortOrder === 'earliest'
           ? first.dueDate.localeCompare(second.dueDate)

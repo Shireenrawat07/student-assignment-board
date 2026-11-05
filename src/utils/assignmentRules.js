@@ -26,6 +26,13 @@ export function getAssignmentsForStudent(assignments, currentUser) {
     : []
 }
 
+export function getPendingSubmissionCount(assignment, updates = {}) {
+  return assignment.assignedStudentIds.filter(
+    (studentId) =>
+      (updates[assignment.id]?.[studentId] ?? assignment.submissions[studentId]) !== 'submitted',
+  ).length
+}
+
 export function canManageAssignment(assignment, currentUser) {
   return currentUser?.role === 'admin' && assignment?.creatorId === currentUser.id
 }

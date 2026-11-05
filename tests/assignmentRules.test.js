@@ -6,6 +6,7 @@ import {
   createSubmissionUpdate,
   getAssignmentsForAdmin,
   getAssignmentsForStudent,
+  getPendingSubmissionCount,
 } from '../src/utils/assignmentRules.js'
 import { demoUsers, seedAssignments } from '../src/data/seedData.js'
 
@@ -129,5 +130,29 @@ test('submission preserves other students updates and respects seeded submitted 
   assert.equal(
     createSubmissionUpdate(assignment, {}, secondStudent.id, secondStudent).success,
     false,
+  )
+})
+
+test('pending submission count matches outstanding work and excludes assignments with no students', () => {
+  const secondStudent = demoUsers.find((user) => user.id === 'student-priya')
+  const assignment = {
+    id: 'assignment-progress',
+    assignedStudentIds: [student.id, secondStudent.id],
+    submissions: {
+      [student.id]: 'submitted',
+      [secondStudent.id]: 'pending',
+    },
+  }
+
+  assert.equal(getPendingSubmissionCount(assignment), 1)
+  assert.equal(
+    getPendingSubmissionCount(assignment, {
+      [assignment.id]: { [secondStudent.id]: 'submitted' },
+    }),
+    0,
+  )
+  assert.equal(
+    getPendingSubmissionCount({ ...assignment, assignedStudentIds: [] }),
+    0,
   )
 })

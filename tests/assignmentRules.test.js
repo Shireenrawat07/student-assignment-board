@@ -39,6 +39,25 @@ test('students cannot create assignments and invalid assignees are rejected', ()
   )
 })
 
+test('assignment creation requires students and initializes each selected student', () => {
+  const secondStudent = demoUsers.find((user) => user.id === 'student-priya')
+  const emptySelection = createAssignmentRecord(
+    { ...assignmentDetails, assignedStudentIds: [] },
+    admin,
+  )
+  const selectedStudents = createAssignmentRecord(
+    { ...assignmentDetails, assignedStudentIds: [student.id, secondStudent.id] },
+    admin,
+  )
+
+  assert.equal(emptySelection.success, false)
+  assert.deepEqual(selectedStudents.assignment.assignedStudentIds, [student.id, secondStudent.id])
+  assert.deepEqual(selectedStudents.assignment.submissions, {
+    [student.id]: 'pending',
+    [secondStudent.id]: 'pending',
+  })
+})
+
 test('admins and students only receive assignments within their scope', () => {
   const secondAdmin = demoUsers.find((user) => user.id === 'admin-mehta')
   const adminAssignments = getAssignmentsForAdmin(seedAssignments, admin)
@@ -48,9 +67,12 @@ test('admins and students only receive assignments within their scope', () => {
   assert.ok(adminAssignments.every((assignment) => assignment.creatorId === admin.id))
   assert.ok(studentAssignments.length > 0)
   assert.ok(studentAssignments.every((assignment) => assignment.assignedStudentIds.includes(student.id)))
+  assert.deepEqual(getAssignmentsForAdmin(seedAssignments, student), [])
+  assert.deepEqual(getAssignmentsForStudent(seedAssignments, admin), [])
   assert.equal(getAssignmentsForAdmin(seedAssignments, secondAdmin).some((item) => adminAssignments.includes(item)), false)
   assert.equal(canManageAssignment(seedAssignments[0], admin), true)
   assert.equal(canManageAssignment(seedAssignments[0], secondAdmin), false)
+  assert.equal(canManageAssignment(seedAssignments[0], student), false)
 })
 
 test('a student can submit only their own assigned work once', () => {
@@ -80,6 +102,32 @@ test('a student can submit only their own assigned work once', () => {
       student.id,
       student,
     ).success,
+    false,
+  )
+})
+
+test('submission preserves other students updates and respects seeded submitted status', () => {
+  const secondStudent = demoUsers.find((user) => user.id === 'student-priya')
+  const assignment = {
+    id: 'assignment-with-existing-progress',
+    assignedStudentIds: [student.id, secondStudent.id],
+    submissions: {
+      [student.id]: 'pending',
+      [secondStudent.id]: 'submitted',
+    },
+  }
+  const existingUpdates = {
+    [assignment.id]: { [secondStudent.id]: 'submitted' },
+  }
+  const result = createSubmissionUpdate(assignment, existingUpdates, student.id, student)
+
+  assert.equal(result.success, true)
+  assert.deepEqual(result.updates[assignment.id], {
+    [student.id]: 'submitted',
+    [secondStudent.id]: 'submitted',
+  })
+  assert.equal(
+    createSubmissionUpdate(assignment, {}, secondStudent.id, secondStudent).success,
     false,
   )
 })
